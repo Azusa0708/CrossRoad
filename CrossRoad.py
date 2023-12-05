@@ -7,7 +7,7 @@ HEIGHT = 1000
 CARNUM = 8              #车数量
 SPEEDMIN = 3
 SPEEDMAX = 4
-SCORE = 0           #分数
+SCORE = 8           #分数
 FINALSCORE = 0
 HEART = 3           #生命
 Isblowup = 0
@@ -123,9 +123,11 @@ class player:
                     self.animIndex = 9
         self.blowup.x = self.player_x
         self.blowup.y = self.player_y
+
 #小汽车类
 class car:
     def __init__(self,car_x,car_speed,car_lane,direction):
+        self.flag = 0
         self.lane = car_lane
         if direction == 0:
             self.actor = Actor('carleft')
@@ -142,6 +144,7 @@ class car:
 #面包车类
 class van:
     def __init__(self,van_x,van_speed,van_lane,direction):
+        self.flag = 0
         self.lane = van_lane
         if direction == 0:
             self.actor = Actor('vanleft')
@@ -158,6 +161,7 @@ class van:
 #货车类
 class truck:
     def __init__(self,truck_x,truck_speed,truck_lane,direction):
+        self.flag = 0
         self.lane = truck_lane
         if direction == 0:
             self.actor = Actor('truckleft')
@@ -174,6 +178,7 @@ class truck:
 #火车类
 class train:
     def __init__(self,train_x,train_speed,train_lane,direction):
+        self.flag = 0
         self.lane = train_lane
         if direction == 0:
             self.actor = Actor('trainleft')
@@ -190,6 +195,7 @@ class train:
 #飞机类
 class plane:
     def __init__(self,plane_x,plane_speed,plane_lane,direction):
+        self.flag = 0
         self.lane = plane_lane
         if direction == 0:
             self.actor = Actor('planeleft')
@@ -209,7 +215,7 @@ class Bullet:
         self.actor = Actor('bullet')
         self.actor.x = x
         self.actor.y = y
-        self.speed = 5
+        self.speed = 6
         self.direction = direction
         
     def update(self):
@@ -225,6 +231,7 @@ class Bullet:
         else:
             self.actor.x -= self.speed
             self.actor.y += self.speed
+            
     
     def draw(self):
         self.actor.draw()
@@ -233,6 +240,7 @@ class Bullet:
 #消防车类
 class firetruck:
     def __init__(self,firetruck_x,firetruck_speed,firetruck_lane,direction):
+        self.flag = 1
         self.lane = firetruck_lane
         if direction == 0:
             self.actor = Actor('firetruckleft')
@@ -241,7 +249,7 @@ class firetruck:
         self.actor.x = firetruck_x
         self.actor.y = 150 + (self.lane-1)*100
         self.speed = firetruck_speed
-        clock.schedule_interval(self.set_bullet, 1.0)
+        clock.schedule_interval(self.set_bullet, 0.7)
         self.bullets = []
     def update(self):
         self.actor.x += self.speed
@@ -263,6 +271,10 @@ class firetruck:
             y = self.actor.y 
             newbullet = Bullet(x ,y ,bulletdirection)
             self.bullets.append(newbullet)
+            
+
+                
+                
 #医疗箱
 class healbox:
     def __init__(self,x,y):
@@ -411,7 +423,7 @@ def updatecar():
             if Isshield == 0:
                 HEART -= 1 
             Isblowup = 1
-            clock.schedule_unique(initIsblowup,0.4)
+            clock.schedule_unique(initIsblowup,0.5)
     for item in items_to_remove:
         list.remove(item)
 
@@ -522,6 +534,8 @@ def initspeed():
 
 def update():
     global HEART
+    if SCORE < 10:
+        HEART = 3
     gamer.update()
     loseorgetscore()
     createcar()
