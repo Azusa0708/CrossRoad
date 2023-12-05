@@ -203,6 +203,66 @@ class plane:
     def draw(self):
         self.actor.draw()
 
+#消防车水弹类
+class Bullet:
+    def __init__(self, x, y, direction):
+        self.actor = Actor('bullet')
+        self.actor.x = x
+        self.actor.y = y
+        self.speed = 5
+        self.direction = direction
+        
+    def update(self):
+        if self.direction == 1:
+            self.actor.x += self.speed
+            self.actor.y += self.speed
+        elif self.direction == 2:
+            self.actor.x += self.speed
+            self.actor.y -= self.speed
+        elif self.direction == 3:
+            self.actor.x -= self.speed
+            self.actor.y -= self.speed
+        else:
+            self.actor.x -= self.speed
+            self.actor.y += self.speed
+    
+    def draw(self):
+        self.actor.draw()
+
+
+#消防车类
+class firetruck:
+    def __init__(self,firetruck_x,firetruck_speed,firetruck_lane,direction):
+        self.lane = firetruck_lane
+        if direction == 0:
+            self.actor = Actor('firetruckleft')
+        else:
+            self.actor = Actor('firetruckright')
+        self.actor.x = firetruck_x
+        self.actor.y = 150 + (self.lane-1)*100
+        self.speed = firetruck_speed
+        clock.schedule_interval(self.set_bullet, 1.0)
+        self.bullets = []
+    def update(self):
+        self.actor.x += self.speed
+        
+        for bullet in self.bullets:
+            bullet.update()
+        
+        #清除离开屏幕的子弹
+        self.bullets = [bullet for bullet in self.bullets if 0 < bullet.actor.x < WIDTH and 0 < bullet.actor.y < HEIGHT]
+        
+    def draw(self):
+        self.actor.draw()
+        
+        for bullet in self.bullets:
+            bullet.draw()
+    def set_bullet(self):
+        for bulletdirection in range(1,4):
+            x = self.actor.x
+            y = self.actor.y 
+            newbullet = Bullet(x ,y ,bulletdirection)
+            self.bullets.append(newbullet)
 #医疗箱
 class healbox:
     def __init__(self,x,y):
@@ -255,14 +315,16 @@ def createcar():
             vehicle_class = random.randint(0, 2)
         elif SCORE <= 5:
             vehicle_class = random.randint(0, 3)
-        else:
+        elif SCORE <= 7:
             vehicle_class = random.randint(0, 4)
+        else:
+            vehicle_class = random.randint(0, 5)
         if vehicle_class == 0:
             if lane == 1 or lane == 3 or lane == 5 or lane == 7:  # 由左向右四车道
                 carspeed = random.uniform(SPEEDMIN, SPEEDMAX)
                 newcar = car(0, carspeed, lane, 0)
             else:
-                carspeed = random.uniform(-SPEEDMIN, -SPEEDMAX)
+                carspeed = random.uniform(-SPEEDMAX, -SPEEDMIN)
                 newcar = car(WIDTH, carspeed, lane, 1)
             # 检查新车辆与该车道上已有车辆是否发生碰撞
             while any(item.lane == lane and newcar.actor.colliderect(item.actor) for item in list):
@@ -274,7 +336,7 @@ def createcar():
                 vanspeed = random.uniform(SPEEDMIN, SPEEDMAX)
                 newvan = van(0, vanspeed, lane, 0)
             else:
-                vanspeed = random.uniform(-SPEEDMIN, -SPEEDMAX)
+                vanspeed = random.uniform(-SPEEDMAX, -SPEEDMIN)
                 newvan = van(WIDTH, vanspeed, lane, 1)
             # 检查新车辆与该车道上已有车辆是否发生碰撞
             while any(item.lane == lane and newvan.actor.colliderect(item.actor) for item in list):
@@ -286,7 +348,7 @@ def createcar():
                 truckspeed = random.uniform(SPEEDMIN, SPEEDMAX)
                 newtruck = truck(0, truckspeed, lane, 0)
             else:
-                truckspeed = random.uniform(-SPEEDMIN, -SPEEDMAX)
+                truckspeed = random.uniform(-SPEEDMAX, -SPEEDMIN)
                 newtruck = truck(WIDTH, truckspeed, lane, 1)
             # 检查新车辆与该车道上已有车辆是否发生碰撞
             while any(item.lane == lane and newtruck.actor.colliderect(item.actor) for item in list):
@@ -298,7 +360,7 @@ def createcar():
                 trainspeed = random.uniform(SPEEDMIN, SPEEDMAX)
                 newtrain = train(0, trainspeed, lane, 0)
             else:
-                trainspeed = random.uniform(-SPEEDMIN, -SPEEDMAX)
+                trainspeed = random.uniform(-SPEEDMAX, -SPEEDMIN)
                 newtrain = truck(WIDTH, trainspeed, lane, 1)
             # 检查新车辆与该车道上已有车辆是否发生碰撞
             while any(item.lane == lane and newtrain.actor.colliderect(item.actor) for item in list):
@@ -315,6 +377,17 @@ def createcar():
             while any(item.lane == lane and newplane.actor.colliderect(item.actor) for item in list):
                 newplane.actor.x = random.uniform(0, WIDTH)
             list.append(newplane)
+        elif vehicle_class == 5:
+            if lane == 1 or lane == 3 or lane == 5 or lane == 7:  # 由左向右四车道
+                firetruckspeed = random.uniform(SPEEDMIN, SPEEDMAX)
+                newfiretruck = firetruck(0, firetruckspeed, lane, 0)
+            else:
+                firetruckspeed = random.uniform(-SPEEDMAX, -SPEEDMIN)
+                newfiretruck = firetruck(WIDTH, firetruckspeed, lane, 1)
+            # 检查新车辆与该车道上已有车辆是否发生碰撞
+            while any(item.lane == lane and newfiretruck.actor.colliderect(item.actor) for item in list):
+                newfiretruck.actor.x = random.uniform(0, WIDTH)
+            list.append(newfiretruck)
 
 
 #实例化
@@ -326,6 +399,7 @@ def drawcar():
     for item in list:
         item.draw()
 
+#车辆更新
 def updatecar():
     global list, WIDTH, HEART, gamer,Isblowup, Isshield
     items_to_remove = []
@@ -343,7 +417,8 @@ def updatecar():
 
     for item in list:
         item.update()
-        
+
+#去除爆炸特效   
 def initIsblowup():
     global Isblowup
     Isblowup = 0
@@ -435,6 +510,7 @@ def eattool():
                     clock.schedule_unique(initshields,5)
                 toollist = []
 
+#消除护盾
 def initshields():
     global Isshield
     Isshield = 0
@@ -446,15 +522,14 @@ def initspeed():
 
 def update():
     global HEART
-    if SCORE <= 5:
-        HEART = 3
     gamer.update()
     loseorgetscore()
     createcar()
     updatecar()
     createtool()
     eattool()
-    
+
+#游戏按键
 def on_mouse_down(pos):
     global game_start, go_home_button
     if start_button.collidepoint(pos):
@@ -463,10 +538,12 @@ def on_mouse_down(pos):
         game_start = 0
     
 def draw():
+    #开始界面
     if game_start == 0:
         background.draw()
         title.draw()
         start_button.draw()
+    #游戏进行界面
     elif game_start == 1:
         road.draw()
         gamer.draw()
@@ -477,6 +554,7 @@ def draw():
         if Isshield == 1:
             protect.pos = gamer.player_x,gamer.player_y
             protect.draw()
+    #失败界面
     elif game_start == -1:
         screen.clear()
         background.draw()
