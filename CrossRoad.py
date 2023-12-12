@@ -266,7 +266,7 @@ class firetruck:
         for bullet in self.bullets:
             bullet.draw()
     def set_bullet(self):
-        for bulletdirection in range(1,4):
+        for bulletdirection in range(0,4):
             x = self.actor.x
             y = self.actor.y 
             newbullet = Bullet(x ,y ,bulletdirection)
